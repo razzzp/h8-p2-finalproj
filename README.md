@@ -27,12 +27,14 @@ Car Rental App
   - can filter by vehicle type/model
   - returns all available cars
 - Client can book a rental for a given car
-  - provide start date and time
-  - provide end date and time
+  - provide start date
+  - provide end date
   - provide vehicle id to rent
   - If car not available return error
   - Returns the payment link to the client
-- Callback for payment gateway to update status of rental
+- Client can make payment at the payment gateway
+  - Callback for payment gateway to update status of rental
+- Client can top up his/her deposit
 
 ### Admin
 
