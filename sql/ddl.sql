@@ -3,22 +3,23 @@
 CREATE TABLE cars (
     id SERIAL PRIMARY KEY,
     wheel_drive INT NOT NULL,
-    type VARCHAR NOT NULL,
+    type VARCHAR(50) NOT NULL,
     seats INT NOT NULL,
-    transmission VARCHAR NOT NULL,
-    manufacturer VARCHAR NOT NULL,
-    model VARCHAR NOT NULL,
+    transmission VARCHAR(20) NOT NULL,
+    manufacturer VARCHAR(255) NOT NULL,
+    car_model VARCHAR(255) NOT NULL,
     year INT NOT NULL,
     stock INT NOT NULL,
     rate_per_day DECIMAL NOT NULL,
+    UNIQUE(manufacturer, car_model)
 );
 
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    name VARCHAR NOT NULL,
-    email VARCHAR NOT NULL,
-    password VARCHAR NOT NULL,
-    deposit DECIMAL NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    deposit DECIMAL NOT NULL DEFAULT 0
 );
 
 CREATE TABLE rentals (
@@ -27,27 +28,27 @@ CREATE TABLE rentals (
     car_id INT REFERENCES cars(id) NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
-    total_price DECIMAL NOT NULL,
+    total_price DECIMAL NOT NULL
 );
 
 CREATE TABLE top_ups (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) NOT NULL,
-    amount DECIMAL NOT NULL,
+    amount DECIMAL NOT NULL
 );
 
 CREATE TABLE payments (
     id SERIAL PRIMARY KEY,
     -- polymorphic FK to either rentals or top_ups
     purchase_id INT NOT NULL,
-    payment_url VARCHAR NOT NULL,
-    status VARCHAR NOT NULL,
-    payment_method VARCHAR NOT NULL,
-    total_payment DECIMAL NOT NULL,
+    payment_url VARCHAR(255) NOT NULL,
+    status VARCHAR(100) NOT NULL,
+    payment_method VARCHAR(100),
+    total_payment DECIMAL
 );
 
 -- Insert dummy data into cars table
-INSERT INTO cars (wheel_drive, type, seats, transmission, manufacturer, model, year, stock, rate_per_day) VALUES
+INSERT INTO cars (wheel_drive, type, seats, transmission, manufacturer, car_model, year, stock, rate_per_day) VALUES
 (4, 'SUV', 5, 'Automatic', 'Toyota', 'RAV4', 2022, 10, 50.00),
 (2, 'Sedan', 5, 'Manual', 'Honda', 'Civic', 2021, 8, 40.00),
 (4, 'Truck', 2, 'Automatic', 'Ford', 'F-150', 2023, 5, 70.00),
