@@ -4,6 +4,7 @@ title App Flow for User
 
 participant Client
 participant Server
+participant PaymentGateway
 
 == Register ==
 ' regiter
@@ -35,4 +36,15 @@ alt Case car available
     Server -> Client : Status 200 OK returns link to payment gateway
 else Case car not available
     Server -> Client : Status 400 bad request
+end
+
+== Make Payment ==
+Client -> PaymentGateway : Make payment
+
+alt ase payment failed
+    PaymentGateway -> Client : failed
+    Client -> PaymentGateway : retry
+else  Case payment success
+    PaymentGateway -> Server : Notify payment made
+    Server -> Server : Update payment status of rental
 end
