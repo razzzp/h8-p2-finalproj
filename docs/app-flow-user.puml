@@ -1,0 +1,38 @@
+@startuml app-flow-user
+
+title App Flow for User
+
+participant Client
+participant Server
+
+== Register ==
+' regiter
+Client -> Server : POST /users/register
+alt Case email available
+    Server -> Client : Status 201 created
+else Case email taken
+    Server -> Client : Status 400 email already registered
+end
+
+== Login ==
+' login
+Client -> Server : POST /users/login
+alt Case credentials corrent
+    Server -> Client : Status 200 OK
+else Case credentials incorrect
+    Server -> Client : Status 401 unauthorized, incorrect user/pass
+end
+
+== Search available cars ==
+' seacrh for available cars
+Client -> Server : Get available cars GET /cars?startDate=...&...
+Server -> Client : list of available cars
+
+
+== Make a rental ==
+Client -> Server : POST /rentals
+alt Case car available
+    Server -> Client : Status 200 OK returns link to payment gateway
+else Case car not available
+    Server -> Client : Status 400 bad request
+end
