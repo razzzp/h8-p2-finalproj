@@ -7,6 +7,7 @@ import (
 
 	"h8-p2-finalproj-app/auth"
 	"h8-p2-finalproj-app/config"
+	"h8-p2-finalproj-app/service"
 
 	// _ "h8-p2-finalproj-app/docs"
 	"h8-p2-finalproj-app/handler"
@@ -56,6 +57,11 @@ func main() {
 	user := handler.NewUserHandler(db)
 	e.POST("/users/register", user.HandleRegisterUser)
 	e.POST("/users/login", user.HandleLoginUser)
+
+	// cars
+	car := handler.NewCarHandler(service.NewCarService(db))
+	cars := e.Group("/cars")
+	cars.GET("", car.HandleGetCars)
 
 	// swagger docs
 	e.GET("/swagger/*", echoSwagger.WrapHandler)

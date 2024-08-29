@@ -1,40 +1,27 @@
 package handler
 
 import (
-	"h8-p2-finalproj-app/model"
+	"h8-p2-finalproj-app/service"
 	"h8-p2-finalproj-app/util"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"gorm.io/gorm"
 )
 
 type CarHandler struct {
-	db *gorm.DB
+	cs *service.CarService
 }
 
-func NewCarHandler(db *gorm.DB) UserHandler {
-	return UserHandler{
-		db: db,
+func NewCarHandler(cs *service.CarService) CarHandler {
+	return CarHandler{
+		cs: cs,
 	}
 }
 
-type GetCarsQueryParams struct {
-	StartDate    *time.Time
-	EndDate      *time.Time
-	WheelDrive   *int
-	Type         []string
-	Seats        *int
-	Transmission *string
-	Manufacturer []string
-	CarModel     []string
-	Year         *uint
-}
-
-func (ch *CarHandler) GetQueryParams(c echo.Context) (*GetCarsQueryParams, error) {
-	param := GetCarsQueryParams{}
+func (ch *CarHandler) GetQueryParams(c echo.Context) (*service.GetCarsQueryParams, error) {
+	param := service.GetCarsQueryParams{}
 	if startDate := c.QueryParam("startDate"); startDate != "" {
 		// parse date
 		date, err := time.Parse(time.DateOnly, startDate)
@@ -62,18 +49,12 @@ func (ch *CarHandler) GetQueryParams(c echo.Context) (*GetCarsQueryParams, error
 	return &param, nil
 }
 
-func (ch *CarHandler) GetCars(params *GetCarsQueryParams) ([]*model.Car, error) {
-	q := ch.db.Preload("Car").Model(&model.Rental{}).Select("")
-	if params.StartDate != nil {
-		q = q.
-			Where("start_date > ? AND start_date < ?")
-	}
-	if params.EndDate != nil {
-		q = q.
-			Or("end_date > ? AND start_date < ?")
-	}
-	q = q.Group("car_id")
-	return nil, nil
+type GetCarsRespItem struct {
+	CardID             uint   `json:"car_id"`
+	Manufacturer       string `json:"manufacturer"`
+	CarModel           string `json:"model"`
+	Seats              uint   `json:"seats"`
+	NumOfCarsAvailable uint   `json:"num_of_cars_available"`
 }
 
 func (ch *CarHandler) HandleGetCars(c echo.Context) error {
@@ -81,10 +62,24 @@ func (ch *CarHandler) HandleGetCars(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	availCars, err := ch.GetCars(params)
+	availCars, err := ch.cs.GetCarsWithRentals(params)
 	if err != nil {
 		return err
 	}
-
-	return c.JSON(http.StatusOK, availCars)
+	// convert to brief with available cars within that date range
+	resp := []GetCarsRespItem{}
+	for _, ac := range availCars {
+		if ac.Stock <= ac.NumOfRentals {
+			// skip cars that are fully rented out
+			continue
+		}
+		resp = append(resp, GetCarsRespItem{
+			CardID:             ac.ID,
+			Manufacturer:       ac.Manufacturer,
+			CarModel:           ac.CarModel,
+			Seats:              ac.Seats,
+			NumOfCarsAvailable: ac.Stock - ac.NumOfRentals,
+		})
+	}
+	return c.JSON(http.StatusOK, resp)
 }
