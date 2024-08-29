@@ -16,12 +16,17 @@ import (
 type RentalHandler struct {
 	db *gorm.DB
 	cs *service.CarService
+	is *service.InvoiceService
 }
 
-func NewRentalHandler(db *gorm.DB, cs *service.CarService) RentalHandler {
+func NewRentalHandler(
+	db *gorm.DB,
+	cs *service.CarService,
+	is *service.InvoiceService) RentalHandler {
 	return RentalHandler{
 		db: db,
 		cs: cs,
+		is: is,
 	}
 }
 
@@ -58,12 +63,13 @@ func (rh *RentalHandler) validatePostRentalReqData(prr *PostRentalsReq) (*PostRe
 }
 
 type PostRentalResp struct {
-	RentalID   uint
-	CarID      uint
-	StartDate  time.Time
-	EndDate    time.Time
-	TotalPrice float64
-	PaymentUrl string
+	RentalID      uint      `json:"rental_id"`
+	CarID         uint      `json:"car_id"`
+	StartDate     time.Time `json:"start_date"`
+	EndDate       time.Time `json:"end_date"`
+	TotalPrice    float64   `json:"total_price"`
+	PaymentStatus string    `json:"payment_status"`
+	PaymentUrl    string    `json:"payment_url"`
 }
 
 func (rh *RentalHandler) HandlePostRentals(c echo.Context) error {
@@ -118,28 +124,26 @@ func (rh *RentalHandler) HandlePostRentals(c echo.Context) error {
 		TotalPayment:  0,
 	}
 	newRental.Payment = newPayment
-	// transaction to create rental and payment
-	// err = rh.db.Transaction(func(tx *gorm.DB) error {
-	// 	err := tx.Create(&newRental).Error
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	// create payment
-	// 	// newPayment:=
-	// 	return nil
-	// })
+	newRental.User = *user
 
 	err = rh.db.Create(&newRental).Error
 	if err != nil {
 		return util.NewAppError(http.StatusInternalServerError, "internal server error", err.Error())
 	}
 
+	// generate invoice url
+	url, err := rh.is.GenerateInvoice(&newRental)
+	if err != nil {
+		return util.NewAppError(http.StatusInternalServerError, "internal server error", err.Error())
+	}
+
 	resp := PostRentalResp{
-		RentalID:   newRental.ID,
-		StartDate:  newRental.StartDate,
-		EndDate:    newRental.EndDate,
-		TotalPrice: newRental.TotalPrice,
-		PaymentUrl: newRental.Payment.PaymentUrl,
+		RentalID:      newRental.ID,
+		StartDate:     newRental.StartDate,
+		EndDate:       newRental.EndDate,
+		TotalPrice:    newRental.TotalPrice,
+		PaymentStatus: newPayment.Status,
+		PaymentUrl:    url,
 	}
 
 	return c.JSON(http.StatusCreated, resp)

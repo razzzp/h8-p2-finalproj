@@ -64,7 +64,7 @@ func main() {
 	cars.GET("", car.HandleGetCars)
 
 	// rentals
-	rental := handler.NewRentalHandler(db, service.NewCarService(db))
+	rental := handler.NewRentalHandler(db, service.NewCarService(db), service.NewInvoiceService())
 	rentals := e.Group("/rentals")
 	rentals.POST("", jwtAuth(rental.HandlePostRentals))
 
