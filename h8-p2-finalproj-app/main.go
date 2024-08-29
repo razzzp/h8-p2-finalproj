@@ -51,7 +51,7 @@ func main() {
 		},
 		SigningKey: []byte(os.Getenv("JWT_KEY")),
 	}
-	_ = echojwt.WithConfig(config)
+	jwtAuth := echojwt.WithConfig(config)
 
 	// users
 	user := handler.NewUserHandler(db)
@@ -62,6 +62,11 @@ func main() {
 	car := handler.NewCarHandler(service.NewCarService(db))
 	cars := e.Group("/cars")
 	cars.GET("", car.HandleGetCars)
+
+	// rentals
+	rental := handler.NewRentalHandler(db, service.NewCarService(db))
+	rentals := e.Group("/rentals")
+	rentals.POST("", jwtAuth(rental.HandlePostRentals))
 
 	// swagger docs
 	e.GET("/swagger/*", echoSwagger.WrapHandler)

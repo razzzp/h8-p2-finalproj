@@ -40,5 +40,9 @@ func CreateDBInstance() *gorm.DB {
 	if err != nil {
 		log.Fatal(err)
 	}
+	err = db.AutoMigrate(&model.Payment{})
+	if err != nil {
+		log.Fatal(err)
+	}
 	return db
 }

@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"h8-p2-finalproj-app/model"
 	"time"
@@ -77,4 +78,27 @@ func (cs *CarService) GetCarsWithRentals(params *GetCarsQueryParams) ([]Availabl
 	bytes, _ := json.Marshal(result)
 	fmt.Println(string(bytes))
 	return result, nil
+}
+
+func (cs *CarService) IsCarAvailable(carId uint, startDate time.Time, endDate time.Time) (bool, error) {
+
+	q := cs.CarsWithRentalQuery(&GetCarsQueryParams{})
+	q.Where("car_id=?", carId)
+
+	var result AvailableCarData
+	err := q.First(&result).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		// fmt.Println(tx.Error)
+		return false, nil
+	} else if err != nil {
+		// fmt.Println(tx.Error)
+		return false, err
+	}
+
+	if result.Stock > result.NumOfRentals {
+		return true, nil
+	} else {
+		return false, nil
+	}
+
 }

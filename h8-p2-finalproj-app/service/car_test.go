@@ -229,3 +229,57 @@ func TestGetCarsWithRentals(t *testing.T) {
 	assert.Len(t, res, 5)
 	assert.Equal(t, uint(1), res[0].NumOfRentals)
 }
+
+func TestIsCarAvailableTrue(t *testing.T) {
+	// r is rental item
+	// q is query
+	//   r.StartDate   r.EndDate
+	// 	----|----|------|--------|--------
+	//         q.StartDate      q.EndDate
+	godotenv.Load("../.env")
+	db := config.CreateDBInstance()
+	if db == nil {
+		t.FailNow()
+	}
+
+	startDate, _ := time.Parse(time.DateOnly, "2024-09-02")
+	endDate, _ := time.Parse(time.DateOnly, "2024-09-04")
+	carService := service.NewCarService(db)
+	res, err := carService.IsCarAvailable(
+		1,
+		startDate,
+		endDate,
+	)
+	if err != nil {
+		t.Error(err)
+	}
+	// PrintAsJSON(res)
+	assert.True(t, res)
+}
+
+func TestIsCarAvailableFalse(t *testing.T) {
+	// r is rental item
+	// q is query
+	//   r.StartDate   r.EndDate
+	// 	----|----|------|--------|--------
+	//         q.StartDate      q.EndDate
+	godotenv.Load("../.env")
+	db := config.CreateDBInstance()
+	if db == nil {
+		t.FailNow()
+	}
+
+	startDate, _ := time.Parse(time.DateOnly, "2024-09-21")
+	endDate, _ := time.Parse(time.DateOnly, "2024-09-23")
+	carService := service.NewCarService(db)
+	res, err := carService.IsCarAvailable(
+		5,
+		startDate,
+		endDate,
+	)
+	if err != nil {
+		t.Error(err)
+	}
+	// PrintAsJSON(res)
+	assert.False(t, res)
+}
