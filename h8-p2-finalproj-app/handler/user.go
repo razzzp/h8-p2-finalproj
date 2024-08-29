@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"h8-p2-finalproj-app/auth"
 	"h8-p2-finalproj-app/model"
-	"h8-p2-finalproj-app/service"
 	"h8-p2-finalproj-app/util"
 	"net/http"
 	"os"
@@ -124,10 +123,10 @@ func (uh *UserHandler) HandleRegisterUser(c echo.Context) error {
 		Email: newUser.Email,
 	}
 
-	err = service.SendMail()
-	if err != nil {
-		fmt.Println(err)
-	}
+	// err = service.SendMail()
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 
 	return c.JSON(http.StatusCreated, &util.ResponseData{
 		Message: "User successfully registered",
