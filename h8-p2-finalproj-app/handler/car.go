@@ -47,7 +47,7 @@ func (ch *CarHandler) GetQueryParams(c echo.Context) (*service.GetCarsQueryParam
 		param.Seats = &seats
 	}
 
-	if param.EndDate.Before(*param.StartDate) {
+	if param.EndDate != nil && param.EndDate.Before(*param.StartDate) {
 		return nil, util.NewAppError(http.StatusBadRequest, "end date cannot be before start date", "")
 	}
 	return &param, nil

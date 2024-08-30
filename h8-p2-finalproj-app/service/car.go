@@ -66,7 +66,7 @@ type AvailableCarData struct {
 
 func (cs *CarService) GetCarsWithRentals(params *GetCarsQueryParams) ([]AvailableCarData, error) {
 
-	q := cs.CarsWithRentalQuery(&GetCarsQueryParams{})
+	q := cs.CarsWithRentalQuery(params)
 
 	var result []AvailableCarData
 
@@ -82,8 +82,11 @@ func (cs *CarService) GetCarsWithRentals(params *GetCarsQueryParams) ([]Availabl
 
 func (cs *CarService) IsCarAvailable(carId uint, startDate time.Time, endDate time.Time) (bool, error) {
 
-	q := cs.CarsWithRentalQuery(&GetCarsQueryParams{})
-	q.Where("car_id=?", carId)
+	q := cs.CarsWithRentalQuery(&GetCarsQueryParams{
+		StartDate: &startDate,
+		EndDate:   &endDate,
+	})
+	q.Where("cars.id=?", carId)
 
 	var result AvailableCarData
 	err := q.First(&result).Error

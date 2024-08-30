@@ -1,6 +1,10 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"fmt"
+
+	"gorm.io/gorm"
+)
 
 type Car struct {
 	gorm.Model
@@ -13,4 +17,8 @@ type Car struct {
 	Year         uint
 	Stock        uint
 	RatePerDay   float64
+}
+
+func (c *Car) GetCarName() string {
+	return fmt.Sprintf("%s %s", c.Manufacturer, c.CarModel)
 }

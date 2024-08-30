@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 	"h8-p2-finalproj-app/model"
 	"h8-p2-finalproj-app/service"
 	"h8-p2-finalproj-app/util"
@@ -78,6 +79,7 @@ func (rh *RentalHandler) HandlePostRentals(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	c.Logger().Print(user.Email)
 
 	// parse and validate req body
 	var reqBody PostRentalsReq
@@ -117,8 +119,9 @@ func (rh *RentalHandler) HandlePostRentals(c echo.Context) error {
 		EndDate:    rentalData.EndDate,
 		TotalPrice: days * car.RatePerDay,
 	}
+
 	newPayment := model.Payment{
-		PaymentUrl:    "https://example.com",
+		PaymentUrl:    "",
 		Status:        "Unpaid",
 		PaymentMethod: "",
 		TotalPayment:  0,
@@ -135,6 +138,31 @@ func (rh *RentalHandler) HandlePostRentals(c echo.Context) error {
 	url, err := rh.is.GenerateInvoice(&newRental)
 	if err != nil {
 		return util.NewAppError(http.StatusInternalServerError, "internal server error", err.Error())
+	}
+	// update payment url
+	newPayment.PaymentUrl = url
+	err = rh.db.Save(&newPayment).Error
+	if err != nil {
+		return util.NewAppError(http.StatusInternalServerError, "internal server error", err.Error())
+	}
+
+	// notify booking made
+	err = service.SendMail(
+		user.Email,
+		"You've made a booking!",
+		fmt.Sprintf(`
+		<h1>Hello %s,</h1><br>
+		<p>Thank you for making a booking, here are the details:</p>
+		<p>Car: %s<br>
+		Start: %s<br>
+		End: %s<br>
+		Total Price: IDR %.0f<br>	
+		</p>
+		<p>You can make payment here:<br>%s</p>
+		`, user.Name, car.GetCarName(), newRental.StartDate.Format(time.DateOnly), newRental.EndDate.Format(time.DateOnly), newRental.TotalPrice, newPayment.PaymentUrl),
+	)
+	if err != nil {
+		c.Logger().Errorf("failed to send email notif: %s", err.Error())
 	}
 
 	resp := PostRentalResp{

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"h8-p2-finalproj-app/auth"
 	"h8-p2-finalproj-app/model"
+	"h8-p2-finalproj-app/service"
 	"h8-p2-finalproj-app/util"
 	"net/http"
 	"os"
@@ -60,9 +61,13 @@ func (uh *UserHandler) validateRegisterUserData(ud *RegisterReqData) error {
 		return util.NewAppError(http.StatusBadRequest, "email cannot be empty", "")
 	}
 	// check dupe
-	var sameEmail model.User
-	err := uh.db.Where("email=?", ud.Email).First(&sameEmail).Error
-	if err == nil {
+	var count int64
+	err := uh.db.Model(&model.User{}).Where("email=?", ud.Email).Count(&count).Error
+	if err != nil {
+		return util.NewAppError(http.StatusInternalServerError, "internal server error", err.Error())
+	}
+	if count != 0 {
+		// email already registered
 		return util.NewAppError(http.StatusBadRequest, "email already registered", "")
 	}
 
@@ -123,10 +128,10 @@ func (uh *UserHandler) HandleRegisterUser(c echo.Context) error {
 		Email: newUser.Email,
 	}
 
-	// err = service.SendMail()
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
+	err = service.SendMail(userData.Email, "Welcome to car rental app!", fmt.Sprintf("<h1>Hello %s, thank you for registering with us!</h1>", newUser.Name))
+	if err != nil {
+		c.Logger().Errorf("failed to send email notif: %s", err.Error())
+	}
 
 	return c.JSON(http.StatusCreated, &util.ResponseData{
 		Message: "User successfully registered",

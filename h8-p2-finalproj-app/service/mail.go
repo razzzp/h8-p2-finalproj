@@ -1,19 +1,29 @@
 package service
 
 import (
+	"errors"
 	"os"
+	"strconv"
 
 	"gopkg.in/gomail.v2"
 )
 
-func SendMail() error {
+func SendMail(to string, subject string, body string) error {
 	m := gomail.NewMessage()
-	m.SetHeader("From", "testmail@mail.com")
-	m.SetHeader("To", "m.razif.pramuda@gmail.com")
-	m.SetHeader("Subject", "Welcome to car rental app!")
-	m.SetBody("text/html", "<h1>Hello, thank you for registering with us!</h1>")
+	m.SetHeader("From", "mrdrummerman123@gmail.com")
+	m.SetHeader("To", to)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", body)
 
-	d := gomail.NewDialer("smtp.freesmtpservers.com", 25, "testmail@mail.com", os.Getenv("SMTP_PASS"))
+	host := os.Getenv("SMTP_HOST")
+	port, err := strconv.Atoi(os.Getenv("SMTP_PORT"))
+	user := os.Getenv("SMTP_USER")
+	pass := os.Getenv("SMTP_PASS")
+
+	if err != nil {
+		return errors.New("invalid SMTP port")
+	}
+	d := gomail.NewDialer(host, port, user, pass)
 
 	// Send the email to Bob, Cora and Dan.
 	if err := d.DialAndSend(m); err != nil {
