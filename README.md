@@ -6,13 +6,17 @@ Car Rental App
 
 ## Decsription
 
+- Backend application to provide the management of a Car Rental business. 
+- Will allow the Users 
+  - to check what cars are provided by the company
+  - check
+
 ### User
 
 - Client can register users by providing:
   - By providing:
     - Email
     - Password
-    - Desposit
   - Check if email already registered, return error if true
 - Client can login a user by providing:
   - By Providing:
@@ -24,8 +28,8 @@ Car Rental App
 - Client can search for available cars for rent
   - provide start date and time
   - provide end date and time
-  - can filter by vehicle type/model
-  - returns all available cars
+  - can filter by seats
+  - returns all available cars matching criteria
 - Client can book a rental for a given car
   - provide start date
   - provide end date
@@ -34,13 +38,9 @@ Car Rental App
   - Returns the payment link to the client
 - Client can make payment at the payment gateway
   - Callback for payment gateway to update status of rental
+- Client can check past rentals made by the user
 - Client can top up his/her deposit
 - Will be notifed by email on registration, booking & payment
-
-### Admin
-
-- Can manage cars avaialble
-  - Create, Update and Delete
 
 ## Technologies
 
