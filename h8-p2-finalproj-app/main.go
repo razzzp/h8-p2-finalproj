@@ -68,6 +68,11 @@ func main() {
 	rentals := e.Group("/rentals")
 	rentals.POST("", jwtAuth(rental.HandlePostRentals))
 
+	// payments, for call backs by xendit
+	payment := handler.NewPaymentHandler(db)
+	payments := e.Group("/payments")
+	payments.POST("/callback", payment.HandlePaymentSuccess)
+
 	// swagger docs
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 

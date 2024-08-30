@@ -15,5 +15,5 @@ type Rental struct {
 	StartDate  time.Time
 	EndDate    time.Time
 	TotalPrice float64
-	Payment    Payment `gorm:"polymorphic:Purchase"`
+	Payment    Payment `gorm:"polymorphicType:PurchaseType;polymorphicId:PurchaseID"`
 }

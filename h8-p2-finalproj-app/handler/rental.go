@@ -69,6 +69,7 @@ type PostRentalResp struct {
 	StartDate     time.Time `json:"start_date"`
 	EndDate       time.Time `json:"end_date"`
 	TotalPrice    float64   `json:"total_price"`
+	PaymentID     uint      `json:"payment_id"`
 	PaymentStatus string    `json:"payment_status"`
 	PaymentUrl    string    `json:"payment_url"`
 }
@@ -140,8 +141,9 @@ func (rh *RentalHandler) HandlePostRentals(c echo.Context) error {
 		return util.NewAppError(http.StatusInternalServerError, "internal server error", err.Error())
 	}
 	// update payment url
-	newPayment.PaymentUrl = url
-	err = rh.db.Save(&newPayment).Error
+	// use one assigned to rental !!!!
+	newRental.Payment.PaymentUrl = url
+	err = rh.db.Save(&newRental.Payment).Error
 	if err != nil {
 		return util.NewAppError(http.StatusInternalServerError, "internal server error", err.Error())
 	}
@@ -170,7 +172,8 @@ func (rh *RentalHandler) HandlePostRentals(c echo.Context) error {
 		StartDate:     newRental.StartDate,
 		EndDate:       newRental.EndDate,
 		TotalPrice:    newRental.TotalPrice,
-		PaymentStatus: newPayment.Status,
+		PaymentID:     newRental.Payment.ID,
+		PaymentStatus: newRental.Payment.Status,
 		PaymentUrl:    url,
 	}
 
