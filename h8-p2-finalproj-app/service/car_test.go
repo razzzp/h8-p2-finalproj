@@ -3,19 +3,60 @@ package service_test
 import (
 	"encoding/json"
 	"fmt"
-	"h8-p2-finalproj-app/config"
+	"h8-p2-finalproj-app/model"
 	"h8-p2-finalproj-app/service"
+	"log"
+	"os"
 	"testing"
 	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
+func CreateTestDB() *gorm.DB {
+	dsn := fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASS"),
+		os.Getenv("DB_NAME")+"_test",
+		os.Getenv("DB_PORT"),
+	)
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = db.AutoMigrate(&model.User{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = db.AutoMigrate(&model.Car{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = db.AutoMigrate(&model.Rental{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = db.AutoMigrate(&model.Payment{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = db.AutoMigrate(&model.TopUp{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	return db
+}
+
 func RunFindOnQuery(db *gorm.DB) ([]map[string]any, error) {
 	var results []map[string]any
-	err := db.Select("*").Find(&results).Error
+	err := db.Find(&results).Error
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +75,7 @@ func PrintAsJSON(m any) {
 
 func TestCountRentalsPerCar(t *testing.T) {
 	godotenv.Load("../.env")
-	db := config.CreateDBInstance()
+	db := CreateTestDB()
 	if db == nil {
 		t.FailNow()
 	}
@@ -55,7 +96,7 @@ func TestCountRentalsPerCarWithDatesLargerThanRental(t *testing.T) {
 	// 	----|-----------|--------|---|----
 	//            q.StartDate q.EndDate
 	godotenv.Load("../.env")
-	db := config.CreateDBInstance()
+	db := CreateTestDB()
 	if db == nil {
 		t.FailNow()
 	}
@@ -82,7 +123,7 @@ func TestCountRentalsPerCarWithStartDateOverlap(t *testing.T) {
 	// 	----|-----------|--------|---|----
 	//    q.StartDate       q.EndDate
 	godotenv.Load("../.env")
-	db := config.CreateDBInstance()
+	db := CreateTestDB()
 	if db == nil {
 		t.FailNow()
 	}
@@ -109,7 +150,7 @@ func TestCountRentalsPerCarWithEndDateOverlap(t *testing.T) {
 	// 	----|----|------|--------|--------
 	//         q.StartDate      q.EndDate
 	godotenv.Load("../.env")
-	db := config.CreateDBInstance()
+	db := CreateTestDB()
 	if db == nil {
 		t.FailNow()
 	}
@@ -131,7 +172,7 @@ func TestCountRentalsPerCarWithEndDateOverlap(t *testing.T) {
 
 func TestCountRentalsPerCarNotFound(t *testing.T) {
 	godotenv.Load("../.env")
-	db := config.CreateDBInstance()
+	db := CreateTestDB()
 	if db == nil {
 		t.FailNow()
 	}
@@ -158,7 +199,7 @@ func TestCarsWithRentals(t *testing.T) {
 	// 	----|----|------|--------|--------
 	//         q.StartDate      q.EndDate
 	godotenv.Load("../.env")
-	db := config.CreateDBInstance()
+	db := CreateTestDB()
 	if db == nil {
 		t.FailNow()
 	}
@@ -185,7 +226,7 @@ func TestCarsWithRentalsWithSeats(t *testing.T) {
 	// 	----|----|------|--------|--------
 	//         q.StartDate      q.EndDate
 	godotenv.Load("../.env")
-	db := config.CreateDBInstance()
+	db := CreateTestDB()
 	if db == nil {
 		t.FailNow()
 	}
@@ -210,7 +251,7 @@ func TestGetCarsWithRentals(t *testing.T) {
 	// 	----|----|------|--------|--------
 	//         q.StartDate      q.EndDate
 	godotenv.Load("../.env")
-	db := config.CreateDBInstance()
+	db := CreateTestDB()
 	if db == nil {
 		t.FailNow()
 	}
@@ -237,7 +278,7 @@ func TestIsCarAvailableTrue(t *testing.T) {
 	// 	----|----|------|--------|--------
 	//         q.StartDate      q.EndDate
 	godotenv.Load("../.env")
-	db := config.CreateDBInstance()
+	db := CreateTestDB()
 	if db == nil {
 		t.FailNow()
 	}
@@ -264,7 +305,7 @@ func TestIsCarAvailableFalse(t *testing.T) {
 	// 	----|----|------|--------|--------
 	//         q.StartDate      q.EndDate
 	godotenv.Load("../.env")
-	db := config.CreateDBInstance()
+	db := CreateTestDB()
 	if db == nil {
 		t.FailNow()
 	}
