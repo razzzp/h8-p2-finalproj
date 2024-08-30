@@ -20,11 +20,13 @@ import (
 
 type UserHandler struct {
 	db *gorm.DB
+	is *service.InvoiceService
 }
 
-func NewUserHandler(db *gorm.DB) UserHandler {
+func NewUserHandler(db *gorm.DB, is *service.InvoiceService) UserHandler {
 	return UserHandler{
 		db: db,
+		is: is,
 	}
 }
 
@@ -212,4 +214,112 @@ func (uh *UserHandler) HandleLoginUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{
 		"token": t,
 	})
+}
+
+type UserProfile struct {
+	UserID  uint    `json:"user_id"`
+	Name    string  `json:"name"`
+	Email   string  `json:"email"`
+	Deposit float64 `json:"deposit"`
+}
+
+// @Summary	User profile
+// @Tags		users
+// @Produce	json
+// @Success	200	{object}	handler.UserProfile
+// @Failure	401	{object}	util.AppError
+// @Failure	500	{object}	util.AppError
+// @Router		/users/profile [get]
+func (uh *UserHandler) HandleUserProfile(c echo.Context) error {
+	// get user from context
+	user, err := util.GetUserFromContext(c, uh.db)
+	if err != nil {
+		return err
+	}
+	resp := UserProfile{
+		UserID:  user.ID,
+		Name:    user.Name,
+		Email:   user.Email,
+		Deposit: user.Deposit,
+	}
+
+	return c.JSON(http.StatusOK, resp)
+}
+
+type TopUpReq struct {
+	Amount float64 `json:"amount"`
+}
+type TopUpResp struct {
+	TopUpID       uint    `json:"top_up_id"`
+	Amount        float64 `json:"amount"`
+	PaymentID     uint    `json:"payment_id"`
+	PaymentStatus string  `json:"payment_status"`
+	PaymentUrl    string  `json:"payment_url"`
+}
+
+func (uh *UserHandler) HandlePostTopUp(c echo.Context) error {
+	// get user from context
+	user, err := util.GetUserFromContext(c, uh.db)
+	if err != nil {
+		return err
+	}
+	c.Logger().Printf("User found: %s", user.Email)
+
+	// parse and validate req body
+	var reqBody TopUpReq
+	err = c.Bind(&reqBody)
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "bad request", err.Error())
+	}
+
+	if reqBody.Amount <= 0 {
+		return util.NewAppError(http.StatusBadRequest, "amount cannot be 0", "")
+	}
+
+	newTopUp := model.TopUp{
+		UserID: user.ID,
+		Amount: reqBody.Amount,
+	}
+
+	newPayment := model.Payment{
+		PaymentUrl:    "",
+		Status:        "Unpaid",
+		PaymentMethod: "",
+		TotalPayment:  0,
+	}
+	newTopUp.Payment = newPayment
+	newTopUp.User = *user
+
+	err = uh.db.Create(&newTopUp).Error
+	if err != nil {
+		return util.NewAppError(http.StatusInternalServerError, "internal server error", err.Error())
+	}
+
+	// generate invoice url
+	url, err := uh.is.GenerateInvoice(
+		newTopUp.Payment.ID,
+		newTopUp.Amount,
+		fmt.Sprintf("Top up IDR %.0f", newTopUp.Amount),
+		user.Email,
+	)
+	if err != nil {
+		return util.NewAppError(http.StatusInternalServerError, "internal server error", err.Error())
+	}
+	// update payment url
+	// use one assigned to rental !!!!
+	newTopUp.Payment.PaymentUrl = url
+	err = uh.db.Save(&newTopUp.Payment).Error
+	if err != nil {
+		return util.NewAppError(http.StatusInternalServerError, "internal server error", err.Error())
+	}
+
+	resp := TopUpResp{
+		TopUpID:       newTopUp.ID,
+		Amount:        newTopUp.Amount,
+		PaymentID:     newTopUp.Payment.ID,
+		PaymentStatus: newTopUp.Payment.Status,
+		PaymentUrl:    url,
+	}
+
+	return c.JSON(http.StatusCreated, resp)
 }

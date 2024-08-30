@@ -74,6 +74,16 @@ type PostRentalResp struct {
 	PaymentUrl    string    `json:"payment_url"`
 }
 
+func (rh *RentalHandler) GenerateInvoiceDesc(rental *model.Rental) string {
+	return fmt.Sprintf(
+		"Renting %s %s, from: %s to %s",
+		rental.Car.Manufacturer,
+		rental.Car.CarModel,
+		rental.StartDate.Format(time.DateOnly),
+		rental.EndDate.Format(time.DateOnly),
+	)
+}
+
 func (rh *RentalHandler) HandlePostRentals(c echo.Context) error {
 	// get user from context
 	user, err := util.GetUserFromContext(c, rh.db)
@@ -136,7 +146,12 @@ func (rh *RentalHandler) HandlePostRentals(c echo.Context) error {
 	}
 
 	// generate invoice url
-	url, err := rh.is.GenerateInvoice(&newRental)
+	url, err := rh.is.GenerateInvoice(
+		newRental.Payment.ID,
+		newRental.TotalPrice,
+		rh.GenerateInvoiceDesc(&newRental),
+		user.Email,
+	)
 	if err != nil {
 		return util.NewAppError(http.StatusInternalServerError, "internal server error", err.Error())
 	}

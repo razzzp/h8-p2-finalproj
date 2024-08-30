@@ -32,7 +32,7 @@ import (
 //	@BasePath	/
 
 //	@securitydefinitions.basic	BasicAuth
-//	@tokenUrl					https://localhost:8080/user/login
+//	@tokenUrl					https://localhost:8080/users/login
 //	@scope.read					Grants read access
 //	@scope.write				Grants write access
 
@@ -54,9 +54,10 @@ func main() {
 	jwtAuth := echojwt.WithConfig(config)
 
 	// users
-	user := handler.NewUserHandler(db)
+	user := handler.NewUserHandler(db, service.NewInvoiceService())
 	e.POST("/users/register", user.HandleRegisterUser)
 	e.POST("/users/login", user.HandleLoginUser)
+	e.GET("/users/profile", jwtAuth(user.HandleUserProfile))
 
 	// cars
 	car := handler.NewCarHandler(service.NewCarService(db))

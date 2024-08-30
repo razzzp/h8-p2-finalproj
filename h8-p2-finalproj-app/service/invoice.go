@@ -5,11 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"h8-p2-finalproj-app/model"
 	"io"
 	"net/http"
 	"os"
-	"time"
 )
 
 type InvoiceService struct {
@@ -24,34 +22,28 @@ func NewInvoiceService() *InvoiceService {
 	}
 }
 
-func (is *InvoiceService) GenerateDesc(rental *model.Rental) string {
-	return fmt.Sprintf(
-		"Renting %s %s, from: %s to %s",
-		rental.Car.Manufacturer,
-		rental.Car.CarModel,
-		rental.StartDate.Format(time.DateOnly),
-		rental.EndDate.Format(time.DateOnly),
-	)
+func (is *InvoiceService) BuildSuccessUrl() string {
+	return os.Getenv("XENDIT_INVOICE_CALLBACK")
 }
 
-func (is *InvoiceService) BuildSuccessUrl(rental *model.Rental) string {
-	return "https://example.com"
+func (is *InvoiceService) BuildFailureUrl() string {
+	return os.Getenv("XENDIT_INVOICE_CALLBACK")
 }
 
-func (is *InvoiceService) BuildFailureUrl(rental *model.Rental) string {
-	return "https://example.com"
-}
-
-func (is *InvoiceService) GenerateInvoice(rental *model.Rental) (string, error) {
+func (is *InvoiceService) GenerateInvoice(id uint,
+	amount float64,
+	desc string,
+	email string,
+) (string, error) {
 	data := map[string]any{
-		"external_id": fmt.Sprintf("%d", rental.Payment.ID),
-		"amount":      rental.TotalPrice,
-		"description": is.GenerateDesc(rental),
+		"external_id": fmt.Sprintf("%d", id),
+		"amount":      amount,
+		"description": desc,
 		"customer": map[string]any{
-			"email": rental.User.Email,
+			"email": email,
 		},
-		"success_redirect_url": is.BuildSuccessUrl(rental),
-		"failure_redirect_url": is.BuildFailureUrl(rental),
+		"success_redirect_url": is.BuildSuccessUrl(),
+		"failure_redirect_url": is.BuildFailureUrl(),
 		"payment_methods": []string{
 			"CREDIT_CARD", "BCA", "BNI", "BSI", "BRI", "MANDIRI", "PERMATA",
 		},
