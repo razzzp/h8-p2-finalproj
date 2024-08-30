@@ -9,7 +9,7 @@ import (
 	"h8-p2-finalproj-app/config"
 	"h8-p2-finalproj-app/service"
 
-	// _ "h8-p2-finalproj-app/docs"
+	_ "h8-p2-finalproj-app/docs"
 	"h8-p2-finalproj-app/handler"
 	"h8-p2-finalproj-app/util"
 
@@ -58,6 +58,7 @@ func main() {
 	e.POST("/users/register", user.HandleRegisterUser)
 	e.POST("/users/login", user.HandleLoginUser)
 	e.GET("/users/profile", jwtAuth(user.HandleUserProfile))
+	e.GET("/users/topup", jwtAuth(user.HandlePostTopUp))
 
 	// cars
 	car := handler.NewCarHandler(service.NewCarService(db))

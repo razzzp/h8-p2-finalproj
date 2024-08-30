@@ -84,15 +84,15 @@ func (uh *UserHandler) validateRegisterUserData(ud *RegisterReqData) error {
 	return nil
 }
 
-// @Summary	Registers a user
-// @Tags		users
-// @Accept		json
-// @Param		UserData	body	handler.RegisterReqData	true	"Data of user to register"
-// @Produce	json
-// @Success	201	{object}	handler.RegisterRespData
-// @Failure	400	{object}	util.AppError
-// @Failure	500	{object}	util.AppError
-// @Router		/users/register [post]
+//	@Summary	Registers a user
+//	@Tags		users
+//	@Accept		json
+//	@Param		UserData	body	handler.RegisterReqData	true	"Data of user to register"
+//	@Produce	json
+//	@Success	201	{object}	handler.RegisterRespData
+//	@Failure	400	{object}	util.AppError
+//	@Failure	500	{object}	util.AppError
+//	@Router		/users/register [post]
 func (uh *UserHandler) HandleRegisterUser(c echo.Context) error {
 	// get body
 	var userData RegisterReqData
@@ -151,16 +151,16 @@ func (uh *UserHandler) validateLoginData(ud *RegisterReqData) error {
 	return nil
 }
 
-// @Summary	Login
-// @Tags		users
-// @Accept		json
-// @Param		EmailPassword	body	handler.LoginReqData	true	"Email and password"
-// @Produce	json
-// @Success	200	{object}	handler.LoginRespData
-// @Failure	404	{object}	util.AppError
-// @Failure	400	{object}	util.AppError
-// @Failure	500	{object}	util.AppError
-// @Router		/users/login [post]
+//	@Summary	Login
+//	@Tags		users
+//	@Accept		json
+//	@Param		EmailPassword	body	handler.LoginReqData	true	"Email and password"
+//	@Produce	json
+//	@Success	200	{object}	handler.LoginRespData
+//	@Failure	404	{object}	util.AppError
+//	@Failure	400	{object}	util.AppError
+//	@Failure	500	{object}	util.AppError
+//	@Router		/users/login [post]
 func (uh *UserHandler) HandleLoginUser(c echo.Context) error {
 
 	// parse body
@@ -223,13 +223,13 @@ type UserProfile struct {
 	Deposit float64 `json:"deposit"`
 }
 
-// @Summary	User profile
-// @Tags		users
-// @Produce	json
-// @Success	200	{object}	handler.UserProfile
-// @Failure	401	{object}	util.AppError
-// @Failure	500	{object}	util.AppError
-// @Router		/users/profile [get]
+//	@Summary	User profile
+//	@Tags		users
+//	@Produce	json
+//	@Success	200	{object}	handler.UserProfile
+//	@Failure	401	{object}	util.AppError
+//	@Failure	500	{object}	util.AppError
+//	@Router		/users/profile [get]
 func (uh *UserHandler) HandleUserProfile(c echo.Context) error {
 	// get user from context
 	user, err := util.GetUserFromContext(c, uh.db)
@@ -257,6 +257,15 @@ type TopUpResp struct {
 	PaymentUrl    string  `json:"payment_url"`
 }
 
+//	@Summary	top up user deposit
+//	@Tags		users
+//	@Produce	json
+//	@Accept		json
+//	@Param		Amount	body		handler.TopUpReq	true	"Amount to top up"
+//	@Success	200		{object}	handler.TopUpResp
+//	@Failure	401		{object}	util.AppError
+//	@Failure	500		{object}	util.AppError
+//	@Router		/users/topup [post]
 func (uh *UserHandler) HandlePostTopUp(c echo.Context) error {
 	// get user from context
 	user, err := util.GetUserFromContext(c, uh.db)

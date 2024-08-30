@@ -1,0 +1,193 @@
+basePath: /
+definitions:
+  handler.LoginReqData:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  handler.LoginRespData:
+    properties:
+      token:
+        type: string
+    type: object
+  handler.RegisterReqData:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
+  handler.RegisterRespData:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  handler.TopUpReq:
+    properties:
+      amount:
+        type: number
+    type: object
+  handler.TopUpResp:
+    properties:
+      amount:
+        type: number
+      payment_id:
+        type: integer
+      payment_status:
+        type: string
+      payment_url:
+        type: string
+      top_up_id:
+        type: integer
+    type: object
+  handler.UserProfile:
+    properties:
+      deposit:
+        type: number
+      email:
+        type: string
+      name:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  util.AppError:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Hacktiv8 Phase 2 Final Project
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: H8 P2 Final Project App
+  version: "1.0"
+paths:
+  /users/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Email and password
+        in: body
+        name: EmailPassword
+        required: true
+        schema:
+          $ref: '#/definitions/handler.LoginReqData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.LoginRespData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.AppError'
+      summary: Login
+      tags:
+      - users
+  /users/profile:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.UserProfile'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/util.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.AppError'
+      summary: User profile
+      tags:
+      - users
+  /users/register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Data of user to register
+        in: body
+        name: UserData
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RegisterReqData'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.RegisterRespData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.AppError'
+      summary: Registers a user
+      tags:
+      - users
+  /users/topup:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Amount to top up
+        in: body
+        name: Amount
+        required: true
+        schema:
+          $ref: '#/definitions/handler.TopUpReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.TopUpResp'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/util.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.AppError'
+      summary: top up user deposit
+      tags:
+      - users
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"
