@@ -5,10 +5,11 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/labstack/echo/v4"
 	"gopkg.in/gomail.v2"
 )
 
-func SendMail(to string, subject string, body string) error {
+func SendMail(to string, subject string, body string, logger echo.Logger) error {
 	m := gomail.NewMessage()
 	m.SetHeader("From", "mrdrummerman123@gmail.com")
 	m.SetHeader("To", to)
@@ -25,8 +26,10 @@ func SendMail(to string, subject string, body string) error {
 	}
 	d := gomail.NewDialer(host, port, user, pass)
 
-	if err := d.DialAndSend(m); err != nil {
-		return err
-	}
+	go func() {
+		if err := d.DialAndSend(m); err != nil {
+			logger.Error(err)
+		}
+	}()
 	return nil
 }

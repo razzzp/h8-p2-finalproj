@@ -176,7 +176,13 @@ func (rh *RentalHandler) HandlePostRentals(c echo.Context) error {
 		Total Price: IDR %.0f<br>	
 		</p>
 		<p>You can make payment here:<br>%s</p>
-		`, user.Name, car.GetCarName(), newRental.StartDate.Format(time.DateOnly), newRental.EndDate.Format(time.DateOnly), newRental.TotalPrice, newPayment.PaymentUrl),
+		`, user.Name,
+			car.GetCarName(),
+			newRental.StartDate.Format(time.DateOnly),
+			newRental.EndDate.Format(time.DateOnly),
+			newRental.TotalPrice,
+			newPayment.PaymentUrl),
+		c.Logger(),
 	)
 	if err != nil {
 		c.Logger().Errorf("failed to send email notif: %s", err.Error())

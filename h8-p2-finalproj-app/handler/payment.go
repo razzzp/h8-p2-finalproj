@@ -111,7 +111,9 @@ func (ph *PaymentHandler) HandlePaymentSuccess(c echo.Context) error {
 	if user := ph.GetUserForPayment(&payment); user != nil {
 		if payment.Status == "Completed" {
 			service.SendMail(user.Email, "Payment received!",
-				"<h1>We have received your payment, enjoy your drive!</h1>")
+				"<h1>We have received your payment, enjoy your drive!</h1>",
+				c.Logger(),
+			)
 		}
 	}
 

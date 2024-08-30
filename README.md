@@ -35,6 +35,7 @@ Car Rental App
 - Client can make payment at the payment gateway
   - Callback for payment gateway to update status of rental
 - Client can top up his/her deposit
+- Will be notifed by email on registration, booking & payment
 
 ### Admin
 
@@ -44,5 +45,27 @@ Car Rental App
 ## Technologies
 
 - Echo
+- Gorm
 - Postgres
-- Xandit
+- Xendit
+- Gmail SMTP
+- Testify
+
+## Environment Variables
+
+```
+DB_HOST=
+DB_PORT=
+DB_NAME=
+DB_USER=
+DB_PASS=
+PORT=
+JWT_KEY=
+XENDIT_API_KEY=
+XENDIT_WEBHOOK_TOKEN=
+XENDIT_INVOICE_CALLBACK=
+SMTP_HOST=
+SMTP_PORT=
+SMTP_USER=
+SMTP_PASS=
+```
