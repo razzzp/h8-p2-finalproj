@@ -66,7 +66,9 @@ func main() {
 	// rentals
 	rental := handler.NewRentalHandler(db, service.NewCarService(db), service.NewInvoiceService())
 	rentals := e.Group("/rentals")
-	rentals.POST("", jwtAuth(rental.HandlePostRentals))
+	rentals.Use(jwtAuth)
+	rentals.POST("", rental.HandlePostRentals)
+	rentals.GET("", rental.HandleGetRentals)
 
 	// payments, for call backs by xendit
 	payment := handler.NewPaymentHandler(db)

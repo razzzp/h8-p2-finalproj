@@ -25,7 +25,6 @@ func SendMail(to string, subject string, body string) error {
 	}
 	d := gomail.NewDialer(host, port, user, pass)
 
-	// Send the email to Bob, Cora and Dan.
 	if err := d.DialAndSend(m); err != nil {
 		return err
 	}

@@ -80,7 +80,7 @@ func (rh *RentalHandler) HandlePostRentals(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	c.Logger().Print(user.Email)
+	c.Logger().Printf("User found: %s", user.Email)
 
 	// parse and validate req body
 	var reqBody PostRentalsReq
@@ -178,4 +178,50 @@ func (rh *RentalHandler) HandlePostRentals(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, resp)
+}
+
+type RentalRespItem struct {
+	RentalID      uint   `json:"rental_id"`
+	StartDate     string `json:"start_date"`
+	EndDate       string `json:"end_date"`
+	CarID         uint   `json:"car_id"`
+	Car           string `json:"car"`
+	PaymentID     uint   `json:"payment_id"`
+	PaymentStatus string `json:"payment_status"`
+	PaymentUrl    string `json:"payment_url,omitempty"`
+}
+
+func (rh *RentalHandler) HandleGetRentals(c echo.Context) error {
+	// get user from context
+	user, err := util.GetUserFromContext(c, rh.db)
+	if err != nil {
+		return err
+	}
+	c.Logger().Print(user.Email)
+
+	// get rentals for user
+	var rentals []model.Rental
+	err = rh.db.Preload("Car").Preload("Payment").Where("user_id=?", user.ID).Find(&rentals).Error
+	if err != nil {
+		return util.NewAppError(http.StatusInternalServerError, "internal server error", err.Error())
+	}
+
+	resp := []RentalRespItem{}
+	for _, r := range rentals {
+		ri := RentalRespItem{
+			RentalID:      r.ID,
+			StartDate:     r.StartDate.Format(time.DateOnly),
+			EndDate:       r.EndDate.Format(time.DateOnly),
+			CarID:         r.Car.ID,
+			Car:           r.Car.GetCarName(),
+			PaymentID:     r.Payment.ID,
+			PaymentStatus: r.Payment.Status,
+		}
+		if r.Payment.Status == "Unpaid" {
+			ri.PaymentUrl = r.Payment.PaymentUrl
+		}
+		resp = append(resp, ri)
+	}
+
+	return c.JSON(http.StatusOK, resp)
 }
