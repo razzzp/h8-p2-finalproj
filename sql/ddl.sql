@@ -42,6 +42,7 @@ CREATE TABLE payments (
     id SERIAL PRIMARY KEY,
     -- polymorphic FK to either rentals or top_ups
     purchase_id INT NOT NULL,
+    purchase_type TEXT NOT NULL,
     payment_url VARCHAR(255) NOT NULL,
     status VARCHAR(100) NOT NULL,
     payment_method VARCHAR(100),
@@ -81,9 +82,9 @@ INSERT INTO top_ups (user_id, amount) VALUES
 (5, 25000);
 
 -- Insert dummy data into payments table
-INSERT INTO payments (purchase_id, payment_url, status, payment_method, total_payment) VALUES
-(1, 'http://payment.com/1', 'Completed', 'Credit Card', 200000),
-(2, 'http://payment.com/2', 'Completed', 'PayPal', 80000),
-(3, 'http://payment.com/3', 'Pending', 'Credit Card', 350000),
-(4, 'http://payment.com/4', 'Completed', 'Debit Card', 180000),
-(5, 'http://payment.com/5', 'Failed', 'Credit Card', 400000);
+INSERT INTO payments (purchase_id, purchase_type, payment_url, status, payment_method, total_payment) VALUES
+(1, 'rentals','http://payment.com/1', 'Completed', 'Credit Card', 200000),
+(2, 'rentals', 'http://payment.com/2', 'Completed', 'PayPal', 80000),
+(3, 'rentals', 'http://payment.com/3', 'Pending', 'Credit Card', 350000),
+(4, 'rentals', 'http://payment.com/4', 'Completed', 'Debit Card', 180000),
+(5, 'rentals', 'http://payment.com/5', 'Failed', 'Credit Card', 400000);
